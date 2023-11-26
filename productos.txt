@@ -1,0 +1,6 @@
+12345-CocaCola-12.5-CocaCola-bebidas-1
+12346-FrootLops-9.25-Kellogs-confle-1
+12347-yogurt-32.5-Chiveria-lacteos-2
+12348-avena-4.75-Quaker-cereal-2
+12349-Sprite-12-CocaCola-bebidas-1
+12345678-fioravanti-12.450000-cocacola-bebida-2

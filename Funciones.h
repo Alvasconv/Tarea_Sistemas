@@ -4,7 +4,6 @@
 
 
 struct Usuario{
-  char nombre[20];
   char user[20];
   char pswrd[20];
   char rol[10];
@@ -14,9 +13,9 @@ struct Producto{
   char nombre[20];
   char categoria[20];
   char marca[20];
-  int codigo;
+  char codigo[10];
   float precio;
-  int bodega;
+  char bodega[1];
 };
 
 extern struct Producto productosBodega[CantidadProducto];
@@ -31,9 +30,12 @@ struct Venta{
 
 void mostrarBodega();
 void mostrarUsarios();
-void venderProducto(int codeProducto);
+void venderProducto(char codeProducto[10]);
 void registrarProducto();
 void updateProducto(int codigo);
 void registrarUsuario();
 void updateUsuario(char user[40]);
 char* validarUser(char usuario[40], char pswrd[40]);
+void addUsuario(struct Usuario u);
+void sumarBodega(struct Producto p);
+void restarBodega(struct Producto p);

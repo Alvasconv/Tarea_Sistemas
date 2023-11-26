@@ -2,20 +2,18 @@
 #include <time.h>
 #include <string.h>
 #include "Funciones.h"
+#include "Escritura.h"
 #define CantidadUsuarios 10
 #define CantidadProducto 50
 
 int main(void) { 
   //Creacion de usuario Admin
-  struct Usuario admin;
-  strcpy(admin.nombre,"admin");
-  strcpy(admin.user,"admin");
-  strcpy(admin.pswrd,"admin");
-  strcpy(admin.rol,"admin");
-  // Agregar el usuario "Admin" al arreglo de usuarios
-  usuarios[0] = admin;
 
 //-------------  MENU  --------------------
+  leerUsuarios();
+  leerProductos();
+  leerVentas();
+  mostrarUsarios();
   
   //variable que mantiene activo el ciclo do-while
   int entrada=1;
@@ -30,7 +28,7 @@ int main(void) {
     strcpy(rol,validarUser(userIngreso,paswrdIngreso));
     //Variables usadas en los metodos de cada rol
     int opcion;
-    int codigoProducto;
+    char codigoProducto[10];
     char usuario[20];
     //Mostrar menu de acuerdo al rol del usuario entrante
     //Menu de Admin
@@ -68,7 +66,7 @@ int main(void) {
         updateProducto(codigoProducto);
       }
     }
-    
+
     //Menu de vendedor
     if(strcmp(rol,"vendedor") == 0){
       printf(">> Bienvenido Vendedor <<\n");
@@ -76,10 +74,10 @@ int main(void) {
       printf("Mostrando productos existentes:");
       mostrarBodega();
       printf("\nIngrese el codigo del producto a vender de la lista: ");
-      scanf(" %d",&codigoProducto);
+      scanf(" %s",&codigoProducto);
       venderProducto(codigoProducto);
     }
-    
+
     //Consulta si desea realizar otro ingreso de usuario
     int opcReiniciar;
     printf("Desea ingresar de nuevo al sistema?\n");
@@ -91,7 +89,7 @@ int main(void) {
       entrada=0;
       printf("FIN DEL PROGRAMA");
     }
-    
+
   }while(entrada!=0);
   return 0;
 }

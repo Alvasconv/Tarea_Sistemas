@@ -3,13 +3,14 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
+#include "Escritura.h"
 #define CantidadUsuarios 10
 #define CantidadProducto 50
 
 struct Producto productosBodega[CantidadProducto];
 struct Usuario usuarios[CantidadUsuarios];
 int indiceBodega = 0;
-int indiceUsuarios = 1;
+int indiceUsuarios = 0;
 
 struct Producto prodVacio;
 struct Usuario userVacio;
@@ -22,8 +23,8 @@ struct Usuario userVacio;
 //Muestra resumidamente los productos guardados en la bodega
 void mostrarBodega(){
   for(int i=0;i<CantidadProducto;i++){
-    if(productosBodega[i].codigo!=0){
-      printf("- nombre: %s\tprecio: %f\tcodigo:%d\n", productosBodega[i].nombre,productosBodega[i].precio,
+    if(productosBodega[i].codigo[0]!='\0'){
+      printf("- nombre: %s\tprecio: %f\tcodigo:%s\n", productosBodega[i].nombre,productosBodega[i].precio,
   productosBodega[i].codigo);
     }
   }
@@ -32,7 +33,7 @@ void mostrarBodega(){
 //Añade el producto al array y suma uno al ind de bodega
 void sumarBodega(struct Producto p){
   for(int i=0;i<CantidadProducto;i++){
-    if(productosBodega[i].codigo == prodVacio.codigo){
+    if((strcmp(productosBodega[i].codigo,prodVacio.codigo)==0)){
       productosBodega[i] = p;
       indiceBodega++;
       break;
@@ -44,7 +45,7 @@ void sumarBodega(struct Producto p){
 //Elimina un producto del array y resta uno en el ind de bodega
 void restarBodega(struct Producto p){
   for(int i=0;i<CantidadProducto;i++){
-    if(productosBodega[i].codigo == p.codigo){
+    if((strcmp(productosBodega[i].codigo,p.codigo)==0)){
       productosBodega[i] = prodVacio;
       indiceBodega--;
       break;
@@ -79,8 +80,8 @@ void deleteUsuario(struct Usuario u){
 
 //Valida las credenciales de ingreso de un usuario
 char* validarUser(char usuario[40], char pswrd[40]){
-  for(int i=0;i<CantidadProducto;i++){
-    if(strcmp(usuarios[i].user,usuario)==0 && strcmp(usuarios[i].pswrd,pswrd)==0) {
+  for(int i=0;i<indiceUsuarios;i++){
+    if(strncmp(usuarios[i].user, usuario,strlen(usuario)) == 0 && strncmp(usuarios[i].pswrd,pswrd, strlen(pswrd)) == 0) {
       printf("Ingreso Exitoso\n");
       return usuarios[i].rol;
     }
@@ -90,11 +91,11 @@ char* validarUser(char usuario[40], char pswrd[40]){
 };
 
 // genera una venta validando el producto vendido por su codigo y restandolo de bodega con la funcion restarBodega
-void venderProducto(int codeProducto)
+void venderProducto(char codeProducto[10])
 {
   int i;
   for(i=0;i<CantidadProducto;i++){
-    if(productosBodega[i].codigo==codeProducto){
+    if(strncmp(productosBodega[i].codigo, codeProducto,strlen(codeProducto)) == 0){
       struct Venta v;
       printf("ingrese nombre del vendedor: ");
       scanf("%s",v.vendedor);
@@ -106,23 +107,17 @@ void venderProducto(int codeProducto)
       v.fechaVenta = time(NULL);
       printf("VENTA EXITOSA\n");
       restarBodega(productosBodega[i]);
+      escribirVenta(v);
     }
   }
-  
-  
+
+
 
 }
 // actualza el producto deseaado a travez de su codigo 
 void updateProducto(int codigo){
-  FILE *archivo = fopen("productos.txt", "r");
-
-  int i = 0;
-  while (fscanf(archivo, "%d %d %s %s %s %f", &productosBodega[i].codigo, &productosBodega[i].bodega, productosBodega[i].nombre, productosBodega[i].marca, productosBodega[i].categoria, &productosBodega[i].precio) == 6) {
-      i++;
-  }
-  fclose(archivo);
-  int j;
-  for(j=0;j<i;j++){
+  int i;
+  for(i=0;i<50;i++){
     if (productosBodega[i].codigo == codigo ){
       printf("ingrese nombre producto: \n");
       scanf("%s",productosBodega[i].nombre);
@@ -133,22 +128,7 @@ void updateProducto(int codigo){
       printf("ingrese el precio: \n");
       scanf("%f",&productosBodega[i].precio);
       printf("ingrese la bodega 1 o 2: \n");
-      scanf(" %d",&productosBodega[i].bodega);
-      
-      archivo = fopen("productos.txt", "w");
-      if (archivo == NULL) {
-          printf("error abrir archivo.\n");
-          exit(EXIT_FAILURE);
-      }
-
-      for (int k = 0; k < i; k++) {
-          fprintf(archivo, "%d %d %s %s %s %f\n", productosBodega[i].codigo, productosBodega[i].bodega, productosBodega[i].nombre, productosBodega[i].marca, productosBodega[i].categoria, productosBodega[i].precio);
-      }
-
-      fclose(archivo);
-
-      printf("Usuario actualizado exitosamente.\n");
-      return;  
+      scanf(" %s",productosBodega[i].bodega);
     }
   }     
 }
@@ -161,7 +141,7 @@ void registrarProducto()
   if(indiceBodega<CantidadProducto){
     struct Producto p;
     printf("ingrese bodega del producto: ");
-    scanf(" %d",&p.bodega);
+    scanf(" %s",p.bodega);
     printf("ingrese nombre del producto: ");
     scanf("%s",p.nombre);
     printf("ingrese categoria del producto: ");
@@ -169,35 +149,21 @@ void registrarProducto()
     printf("ingrese marca del producto: ");
     scanf(" %s",p.marca);
     printf("ingrese codigo del producto: ");
-    scanf(" %d",&p.codigo);
+    scanf(" %s",p.codigo);
     printf("ingrese precio del producto: ");
     scanf(" %f",&p.precio);
     sumarBodega(p);
-    // Abrir el archivo 
-    FILE *archivo = fopen("productos.txt", "a");
-    if (archivo == NULL) {
-        printf("Archivo vacio.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Escribir el nuevo producto en el archivo
-    fprintf(archivo, "%d %d %s %s %s %f\n",p.codigo, p.bodega, p.nombre, p.marca, p.categoria, p.precio);
-
-    fclose(archivo);
-
-    printf("Usuario registrado exitosamente.\n");
+    escribirProducto(p);
   }
   else{
     printf("La bodega esta llena.");
   }
-  
+
 };
 // registra nuevos usuarios 
 void registrarUsuario()
 {
-  struct Usuario u;  
-  printf("ingrese nombre: ");
-  scanf("%s",u.nombre);
+  struct Usuario u;
   printf("ingrese usuario: ");
   scanf(" %s",u.user);
   printf("ingrese contraseña: ");
@@ -205,97 +171,44 @@ void registrarUsuario()
   printf("ingrese su rol(vendedor, admin o bodeguero): ");
   scanf(" %s",u.rol);
   addUsuario(u);
-  // Abrir el archivo 
-  FILE *archivo = fopen("usuarios.txt", "a");
-  if (archivo == NULL) {
-      printf("Archivo vacio.\n");
-      exit(EXIT_FAILURE);
-  }
-
-  // Escribir el nuevo usuario en el archivo
-  fprintf(archivo, "%s %s %s %s\n",u.nombre, u.user, u.pswrd, u.rol);
-
-  fclose(archivo);
-
-  printf("Usuario registrado exitosamente.\n");
+  escribirUsuario(u);
 };
 
 // actualiza usuarios ya sea su nombre usuario o contraseña
 void updateUsuario(char user[40])
-{  
-  FILE *archivo = fopen("usuarios.txt", "r");
-  
-  int i = 0;
-  while (fscanf(archivo, "%s %s %s %s", usuarios[i].nombre, usuarios[i].user, usuarios[i].pswrd, usuarios[i].rol) == 4) {
-      i++;
-  }
-  fclose(archivo);
-  for(int j=0;j<i;j++){
-    if(strcmp(usuarios[j].user,user)==0){ 
+{
+  for(int i=0;i<CantidadUsuarios;i++){
+    if(strcmp(usuarios[i].user,user)==0){ 
       int opcion;
       printf("Que desea actualizar: ");
-      printf("1. Nombre \n 2. Usuario \n 3. Contraseña \n");
+      printf("1. Usuario \n 2. Contraseña \n");
       scanf("%d",&opcion);
 
       if(opcion == 1){
-        printf("ingrese nombre nuevo: ");
-        scanf("%s",usuarios[j].nombre);
+        printf("ingrese usuario nuevo: ");
+        scanf("%s",usuarios[i].user);
       }
       else if(opcion == 2){
-        printf("ingrese usuario nuevo: ");
-        scanf("%s",usuarios[j].user);
-      }
-      else if(opcion == 3){
         printf("ingrese contraseña nueva: ");
-        scanf("%s",usuarios[j].pswrd);
+        scanf("%s",usuarios[i].pswrd);
       }
       else{
         printf("Opcion incorrecta ");
       }
-      
-      archivo = fopen("usuarios.txt", "w");
-      if (archivo == NULL) {
-          printf("Error al abrir el archivo de usuarios.\n");
-          exit(EXIT_FAILURE);
-      }
-
-      for (int k = 0; k < i; k++) {
-          fprintf(archivo, "%s %s %s %s\n", usuarios[k].nombre, usuarios[k].user, usuarios[k].pswrd, usuarios[k].rol);
-      }
-
-      fclose(archivo);
-
-      printf("Usuario actualizado exitosamente.\n");
-      return;  
-     
     } 
-    
+
   }
-  
-  
+
+
 };
 
 void mostrarUsarios(){
-  // for(int i=0;i<CantidadUsuarios;i++){
-  //   if(usuarios[i].user[0] != 0){
-  //     printf("- nombre: %s\tusuario: %s\tcontraseña:%s\trol:%s\n", usuarios[i].nombre, usuarios[i].user,
-  //       usuarios[i].pswrd,usuarios[i].rol);
-  //   }
-  // }
-  FILE *archivo = fopen("usuarios.txt", "r");
-  if (archivo == NULL) {
-      printf("Error al abrir el archivo de usuarios.\n");
-      exit(EXIT_FAILURE);
+  for(int i=0;i<CantidadUsuarios;i++){
+    if(usuarios[i].user[0] != 0){
+      printf("- usuario: %s\tcontraseña:%s\trol:%s\n",usuarios[i].user,
+        usuarios[i].pswrd,usuarios[i].rol);
+    }
   }
-
-  printf("\nUsuarios registrados:\n");
-  struct Usuario usuario;
-
-  while (fscanf(archivo, "%s %s %s %s", usuario.nombre, usuario.user, usuario.pswrd, usuario.rol) == 4) {
-      printf("Nombre: %s, Usuario: %s, Rol: %s\n", usuario.nombre, usuario.user, usuario.rol);
-  }
-
-  fclose(archivo);
 }
 
 
